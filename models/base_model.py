@@ -2,6 +2,7 @@
 """Module defines the base class"""
 from uuid import uuid4
 from datetime import datetime
+import models
 
 
 class BaseModel:
@@ -15,8 +16,8 @@ class BaseModel:
         *args: not used.
         **kwargs: any keyworded argument that may be
                   passed as parameter.
-	"""
-        if kwargs != None and len(kwargs) != 0:
+    """
+        if len(kwargs) != 0:
             for key, value in kwargs.items():
                 if key == "__class__":
                     pass
@@ -28,6 +29,7 @@ class BaseModel:
             self.id = str(uuid4())
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
+            models.storage.new(self)
 
     def __str__(self):
         """returns a string representation of object"""
@@ -36,9 +38,10 @@ class BaseModel:
     def save(self):
         """updates the public instance attribute
         updated_at with the current datetime
-       	"""
+        """
         self.updated_at = datetime.now()
-     
+        models.storage.save()
+
     def to_dict(self):
         """returns a dictionary containing all
         keys/values of __dict__ of the instance
