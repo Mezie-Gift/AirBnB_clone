@@ -7,21 +7,27 @@ from datetime import datetime
 class BaseModel:
     """Class defines the BaseModel that defines all
     common attributes for other classes"""
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """Method takes care of the initialization,
         serialization/deserialization of future
         instances
         args:
-        id: assigns an identity to an instance
-        created_at: assigns with the current datetime
-        when an instance is created.
-        updated_at: assigns the current datetime an
-        instance is created and is updated everytime
-        the object is changed
+        *args: not used.
+        **kwargs: any keyworded argument that may be
+                  passed as parameter.
 	"""
-        self.id = str(uuid4())
-        self.created_at = datetime.now()
-        self.updated_at = datetime.now()
+        if kwargs != None and len(kwargs) != 0:
+            for key, value in kwargs.items():
+                if key == "__class__":
+                    pass
+                elif key == "created_at" or key == "updated_at":
+                    self.__dict__[key] = datetime.fromisoformat(value)
+                else:
+                    self.__dict__[key] = value
+        else:
+            self.id = str(uuid4())
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
 
     def __str__(self):
         """returns a string representation of object"""
