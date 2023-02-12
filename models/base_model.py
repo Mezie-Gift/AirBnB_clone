@@ -1,53 +1,56 @@
 #!/usr/bin/python3
-"""Module defines the base class"""
-from uuid import uuid4
+"""This script is the base model"""
+
+import uuid
 from datetime import datetime
-import models
+from models import storage
 
 
 class BaseModel:
-    """Class defines the BaseModel that defines all
-    common attributes for other classes"""
+
+    """Class from which all other classes will inherit"""
+
     def __init__(self, *args, **kwargs):
-        """Method takes care of the initialization,
-        serialization/deserialization of future
-        instances
-        args:
-        *args: not used.
-        **kwargs: any keyworded argument that may be
-                  passed as parameter.
-    """
-        if len(kwargs) != 0:
-            for key, value in kwargs.items():
-                if key == "__class__":
-                    pass
-                elif key == "created_at" or key == "updated_at":
-                    self.__dict__[key] = datetime.fromisoformat(value)
+        """Initializes instance attributes
+
+        Args:
+            - *args: list of arguments
+            - **kwargs: dict of key-values arguments
+        """
+
+        if kwargs is not None and kwargs != {}:
+            for key in kwargs:
+                if key == "created_at":
+                    self.__dict__["created_at"] = datetime.strptime(
+                        kwargs["created_at"], "%Y-%m-%dT%H:%M:%S.%f")
+                elif key == "updated_at":
+                    self.__dict__["updated_at"] = datetime.strptime(
+                        kwargs["updated_at"], "%Y-%m-%dT%H:%M:%S.%f")
                 else:
-                    self.__dict__[key] = value
+                    self.__dict__[key] = kwargs[key]
         else:
-            self.id = str(uuid4())
+            self.id = str(uuid.uuid4())
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
-            models.storage.new(self)
+            storage.new(self)
 
     def __str__(self):
-        """returns a string representation of object"""
-        return f"[{self.__class__.__name__}] ({self.id}) {self.__dict__}"
+        """Returns official string representation"""
+
+        return "[{}] ({}) {}".\
+            format(type(self).__name__, self.id, self.__dict__)
 
     def save(self):
-        """updates the public instance attribute
-        updated_at with the current datetime
-        """
+        """updates the public instance attribute updated_at"""
+
         self.updated_at = datetime.now()
-        models.storage.save()
+        storage.save()
 
     def to_dict(self):
-        """returns a dictionary containing all
-        keys/values of __dict__ of the instance
-        """
-        dict_copy = self.__dict__.copy()
-        dict_copy["__class__"] = self.__class__.__name__
-        dict_copy["created_at"] = self.created_at.isoformat()
-        dict_copy["updated_at"] = self.updated_at.isoformat()
-        return dict_copy
+        """returns a dictionary containing all keys/values of __dict__"""
+
+        my_dict = self.__dict__.copy()
+        my_dict["__class__"] = type(self).__name__
+        my_dict["created_at"] = my_dict["created_at"].isoformat()
+        my_dict["updated_at"] = my_dict["updated_at"].isoformat()
+        return my_dict
